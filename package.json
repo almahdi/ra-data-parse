@@ -1,0 +1,41 @@
+{
+  "name": "ra-data-parse",
+  "version": "0.0.1",
+  "description": "Parse data provider for react-admin",
+  "main": "index.js",
+  "scripts": {
+    "publish": "git push origin --tags && npm run changelog && git push origin",
+    "changelog": "github_changelog_generator && git add CHANGELOG.md && git commit -am \"Updating changelog\"",
+    "release:patch": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/almahdi/ra-data-parse.git"
+  },
+  "keywords": [
+    "reactjs",
+    "react",
+    "rest",
+    "parse",
+    "local",
+    "react-admin"
+  ],
+  "author": "Ali Almahdi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/almahdi/ra-data-parse/issues"
+  },
+  "homepage": "https://github.com/almahdi/ra-data-parse#readme",
+  "devDependencies": {
+    "react": "^16.7.0",
+    "react-admin": "^2.7.0",
+    "react-dom": "^16.7.0"
+  },
+  "peerDependencies": {
+    "react-admin": "^2.7.0",
+    "prop-types": "^15.6.2",
+    "parse": "^2.1.0"
+  }
+}
