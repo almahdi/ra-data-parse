@@ -19,7 +19,7 @@ export default ({URL, APP_ID, JAVASCRIPT_KEY}) => {
     return async (type, resource, params) => {
         const resourceObj = Parse.Object.extend(resource);
         const query = new Parse.Query(resourceObj);
-        
+
         switch (type) {
             case GET_LIST: {
                 const { page, perPage } = params.pagination;
@@ -45,12 +45,8 @@ export default ({URL, APP_ID, JAVASCRIPT_KEY}) => {
                 };
             }
             case GET_MANY: {
-                const results = params.ids.map(id => query.get(id));
+                const results = params.ids.map(id => (new Parse.Query(resourceObj)).get(id));
                 const data = await Promise.all(results);
-                console.log({
-                    total: data.length,
-                    data: data.map(o => ({ id: o.id, ...o.attributes }))
-                });
                 return {
                     total: data.length,
                     data: data.map(o => ({ id: o.id, ...o.attributes }))
@@ -103,7 +99,7 @@ export default ({URL, APP_ID, JAVASCRIPT_KEY}) => {
             }
             case UPDATE_MANY: {
                 try {
-                    const qs = await Promise.all(params.ids.map(id => query.get(id)));
+                    const qs = await Promise.all(params.ids.map(id => (new Parse.Query(resourceObj)).get(id)));
                     qs.map(q => q.save(params.data));
                     return {data: params.ids}
                 } catch {
@@ -122,7 +118,7 @@ export default ({URL, APP_ID, JAVASCRIPT_KEY}) => {
             }
             case DELETE_MANY: {
                 try {
-                    const qs = await Promise.all(params.ids.map(id=>query.get(id)));
+                    const qs = await Promise.all(params.ids.map(id=>(new Parse.Query(resourceObj)).get(id)));
                     await Promise.all(qs.map(obj=>obj.destroy()));
                     return {data: params.ids}
                 } catch(error) {
