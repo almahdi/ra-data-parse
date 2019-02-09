@@ -1,5 +1,8 @@
 # Change Log
 
+## [v0.0.3](https://github.com/almahdi/ra-data-parse/tree/v0.0.3) (2019-02-09)
+[Full Changelog](https://github.com/almahdi/ra-data-parse/compare/v0.0.2...v0.0.3)
+
 ## [v0.0.2](https://github.com/almahdi/ra-data-parse/tree/v0.0.2) (2019-02-06)
 
 
