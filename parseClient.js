@@ -24,6 +24,7 @@ export default ({URL, APP_ID, JAVASCRIPT_KEY}) => {
             case GET_LIST: {
                 const { page, perPage } = params.pagination;
                 const { field, order } = params.sort;
+                const { filter } = params;
 
                 const count = await query.count();
                 query.limit(perPage);
@@ -31,7 +32,7 @@ export default ({URL, APP_ID, JAVASCRIPT_KEY}) => {
 
                 if (order === "DESC") query.descending(field);
                 else if (order === "ASEC") query.ascending(field);
-
+                Object.keys(filter).map(f => query.contains(f, filter[f]));
                 const results = await query.find();
                 return {
                     total: count,
