@@ -32,7 +32,7 @@ export default ({URL, APP_ID, JAVASCRIPT_KEY}) => {
 
                 if (order === "DESC") query.descending(field);
                 else if (order === "ASEC") query.ascending(field);
-                Object.keys(filter).map(f => query.contains(f, filter[f]));
+                Object.keys(filter).map(f => query.matches(f, filter[f], 'i'));
                 const results = await query.find();
                 return {
                     total: count,
