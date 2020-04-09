@@ -17,7 +17,8 @@ export default ({URL, APP_ID, JAVASCRIPT_KEY}) => {
         Parse.serverURL = URL;
     }
     return async (type, resource, params) => {
-        const resourceObj = Parse.Object.extend(resource);
+       
+         const resourceObj = Parse.Object.extend(resource);
         const query = new Parse.Query(resourceObj);
 
         switch (type) {
@@ -25,20 +26,18 @@ export default ({URL, APP_ID, JAVASCRIPT_KEY}) => {
                 const { page, perPage } = params.pagination;
                 const { field, order } = params.sort;
                 const { filter } = params;
-
                 const count = await query.count();
                 query.limit(perPage);
                 query.skip((page - 1) * perPage);
-
                 if (order === "DESC") query.descending(field);
                 else if (order === "ASEC") query.ascending(field);
-                Object.keys(filter).map(f => query.matches(f, filter[f], 'i'));
+                Object.keys(filter).map(f => query.contains(f, filter[f]));
                 const results = await query.find();
                 return {
                     total: count,
                     data: results.map(o => ({ id: o.id, ...o.attributes }))
                 };
-            }
+         }
             case GET_ONE: {
                 const result = await query.get(params.id);
                 return {
@@ -46,13 +45,12 @@ export default ({URL, APP_ID, JAVASCRIPT_KEY}) => {
                 };
             }
             case GET_MANY: {
-                const results = params.ids.map(id => (new Parse.Query(resourceObj)).get(id));
-                const data = await Promise.all(results);
-                return {
-                    total: data.length,
-                    data: data.map(o => ({ id: o.id, ...o.attributes }))
-                };
-
+                    const results = params.ids.map(id => (new Parse.Query(resourceObj)).get(id));
+                    const data = await Promise.all(results);
+                    return {
+                        total: data.length,
+                        data: data.map(o => ({ id: o.id, ...o.attributes })),
+                    };
             }
             case GET_MANY_REFERENCE: {
                 const { page, perPage } = params.pagination;
@@ -63,17 +61,14 @@ export default ({URL, APP_ID, JAVASCRIPT_KEY}) => {
                 query.skip((page - 1) * perPage);
                 if (order === "DESC") query.descending(field);
                 else if (order === "ASEC") query.ascending(field);
-
                 const results = await query.find();
                 return {
                     total: count,
                     data: results.map(o => ({ id: o.id, ...o.attributes }))
                 };
-
             }
             case CREATE: {
                 const resObj = new resourceObj();
-                // Object.keys(params.data).map(key=>resObj.set(key, params.data[key]));
                 try {
                     const r = await resObj.save(params.data);
                     return {data: {id: r.id, ...r.attributes}}
@@ -82,21 +77,39 @@ export default ({URL, APP_ID, JAVASCRIPT_KEY}) => {
                 }
             }
             case UPDATE: {
+                var allPointersArr=[];
+                var pointerArr=[];
                 try {
                     const obj = await query.get(params.id);
                     const keys = Object.keys(params.data).filter(o=> o=="id" || o=="createdAt" || o=="updatedAt" ? false : true);
                     const data = keys.reduce((r,f,i)=>{
-                        r[f] = params.data[f];
+                        if(params.data[f].id==undefined){
+                           // console.log("Not Pointer");
+                            r[f] = params.data[f];
+                        }
+                        else{
+                           // console.log("Pointer");
+                            pointerArr["pointerCN"]=params.data[f].className;
+                            pointerArr["pointerKey"]=params.data[f].id;
+                            pointerArr["referenceCN"]=f;
+                            allPointersArr.push(pointerArr);
+                            pointerArr=[];
+                        }
                         return r;
                     }, {});
-                    // console.log(obj);
+                    for(var i=0;i<allPointersArr.length;i++){
+                    var uObject = new Parse.Object(obj.className);
+                    uObject.id=obj.id;
+                    var pObject = new Parse.Object(allPointersArr[i].pointerCN);
+                    pObject.id = allPointersArr[i].pointerKey;
+                    uObject.set(allPointersArr[i].referenceCN, pObject);
+                    await uObject.save();
+                }
                     const r = await obj.save(data);
-                    // console.log(r);
-                    // console.log({data: {id: r.id, ...r.attributes}});
                     return {data: {id: r.id, ...r.attributes}}
                 } catch (error) {
                     throw Error(error.toString());
-                }
+                }             
             }
             case UPDATE_MANY: {
                 try {
@@ -127,6 +140,10 @@ export default ({URL, APP_ID, JAVASCRIPT_KEY}) => {
                 }
 
             }
-        }
+        } 
     };
 }
+
+
+
+
